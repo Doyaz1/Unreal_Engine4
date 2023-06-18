@@ -7,12 +7,14 @@
 AFountain::AFountain()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
-
+	// Tick 함수를 실행하지 않는다.
+	PrimaryActorTick.bCanEverTick = false;
+	//액터에 컴포넌트 구현
 	Body = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("BODY"));
 	Water = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("WATER"));
 	Light = CreateDefaultSubobject<UPointLightComponent>(TEXT("LIGHT"));
 	Splash = CreateAbstractDefaultSubobject<UParticleSystemComponent>(TEXT("SPLASH"));
+	Movement = CreateDefaultSubobject<URotatingMovementComponent>(TEXT("MOVEMENT"));
 
 	RootComponent = Body;
 	Water->SetupAttachment(Body);
@@ -46,6 +48,9 @@ AFountain::AFountain()
 	{
 		Splash->SetTemplate(PS_SPLASH.Object);
 	}
+	// Z축을 기준으로 RotateSpeed만큼 회전한다.
+	RotateSpeed = 30.0f;
+	Movement->RotationRate = FRotator(0.0f, RotateSpeed, 0.0f);
 }
 
 // Called when the game starts or when spawned
@@ -61,7 +66,13 @@ void AFountain::BeginPlay()
 // Called every frame
 void AFountain::Tick(float DeltaTime)
 {
-
+	Super::Tick(DeltaTime);
+	//이동과 스케일을 위한 정보는 FVector, 회전에는 FRotator를 사용한다.
+	/* Pitch : 좌우를 기준으로 돌아가는 회전이다. 언리얼 엔진에서는 Y축 회전을 표현
+	   Yaw : 상하를 기준으로 돌아가는 회전이다. 언리얼 엔진에서는 Z축 회전을 표현
+	   Roll : 정면을 기준으로 돌아가는 회전이다. 언리얼 엔진에서는 X축 회전을 표현 */
+	// Z축(고정축)을 기준으로 Fountain 액터 회전, 프레임 타임 정보 DeltaTime을 활용해 초당 일정한 속도로 분수대 회전
+	AddActorLocalRotation(FRotator(0.0f, RotateSpeed * DeltaTime, 0.0f));
 
 }
 
